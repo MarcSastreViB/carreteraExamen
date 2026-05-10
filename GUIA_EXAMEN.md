@@ -33,7 +33,7 @@ core/src/main/java/com/exempleclasse/
 
 ---
 
-## MODIFICACIO 1 — Dificultat progressiva (velocitat augmenta amb el temps)
+## PROVA 1 — Dificultat progressiva (velocitat augmenta amb el temps)
 
 **Probabilitat alta.** Es la modificacio mes classica d'un joc d'esquivar.
 
@@ -96,7 +96,7 @@ gestorRivals.setDificultat(factorDificultat);
 
 ---
 
-## MODIFICACIO 2 — Meta / linia d'arribada (la partida s'acaba als X punts)
+## PROVA 2 — Meta / linia d'arribada (la partida s'acaba als X punts)
 
 **Probabilitat alta.** L'enunciat original diu "arriba a la meta".
 
@@ -127,6 +127,14 @@ Copiar `PantallaGameOver.java` i canviar:
 - El comentari motivador
 
 ```java
+package com.exempleclasse;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.utils.ScreenUtils;
+
 public class PantallaVictoria implements Screen {
 
     private final Main joc;
@@ -147,16 +155,19 @@ public class PantallaVictoria implements Screen {
         joc.batch.setProjectionMatrix(joc.viewport.getCamera().combined);
         joc.batch.begin();
 
+        // Titol en verd
         joc.fontTitol.setColor(Color.GREEN);
         layout.setText(joc.fontTitol, "HAS GUANYAT!");
         joc.fontTitol.draw(joc.batch, layout,
             (Main.AMPLADA - layout.width) / 2f, Main.ALCADA - 60f);
 
+        // Puntuacio
         joc.fontPunts.setColor(Color.YELLOW);
         layout.setText(joc.fontPunts, "Puntuacio: " + puntuacioFinal);
         joc.fontPunts.draw(joc.batch, layout,
             (Main.AMPLADA - layout.width) / 2f, Main.ALCADA / 2f);
 
+        // Text parpellejant
         if (tempsParpelleig % 1f < 0.65f) {
             joc.fontPunts.setColor(Color.WHITE);
             layout.setText(joc.fontPunts, "Toca per tornar al menu");
@@ -170,7 +181,6 @@ public class PantallaVictoria implements Screen {
         }
     }
 
-    // show, resize, pause, resume, hide, dispose iguals que PantallaGameOver
     @Override public void show() {}
     @Override public void resize(int w, int h) { joc.viewport.update(w, h, true); }
     @Override public void pause() {}
@@ -182,7 +192,7 @@ public class PantallaVictoria implements Screen {
 
 ---
 
-## MODIFICACIO 3 — Objectes col·leccionables (bonus de punts)
+## PROVA 3 — Objectes col·leccionables (bonus de punts)
 
 **Probabilitat alta.** Afegir un item que apareix a la carretera i dona punts extres.
 
@@ -305,12 +315,12 @@ if (gestorItems.recollirItem(cotxeJugador)) {
 
 ---
 
-## MODIFICACIO 4 — Pantalla de pausa
+## PROVA 4 — Pantalla de pausa
 
 **Probabilitat mitja.** Demana coneixer el cicle de vida de Screen.
 
 ### Que cal fer
-Afegir un boolea `pausat` a `PantallaJoc`. Quan l'usuari toca una zona (per exemple, la cantonada superior esquerra), es pausa/despausa.
+Afegir un boolea `pausat` a `PantallaJoc`. Quan l'usuari toca una zona (per exemple, el centre superior), es pausa/despausa.
 
 ### Fitxer: `PantallaJoc.java`
 
@@ -322,7 +332,7 @@ private boolean pausat = false;
 Al principi de `render()`, despres de `ScreenUtils.clear`:
 
 ```java
-// Comprovar si l'usuari vol pausar/despausar (tocant el centre de la pantalla)
+// Comprovar si l'usuari vol pausar/despausar (tocant el centre superior)
 if (Gdx.input.justTouched()) {
     Vector3 pos = stage.getCamera().unproject(
         new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
@@ -361,11 +371,11 @@ if (pausat) {
 }
 ```
 
-**Nota:** Caldra importar `Vector3` a PantallaJoc.
+**Nota:** Caldra importar `com.badlogic.gdx.math.Vector3` a PantallaJoc.
 
 ---
 
-## MODIFICACIO 5 — Guardar millor puntuacio (Preferences)
+## PROVA 5 — Guardar millor puntuacio (Preferences)
 
 **Probabilitat mitja-alta.** LibGDX te `Preferences` per guardar dades persistents.
 
@@ -375,7 +385,7 @@ Quan el jugador perd, guardem el record si es supera:
 
 ```java
 // Dins el bloc on vides <= 0, ABANS de setScreen:
-import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Preferences;
 
 Preferences prefs = Gdx.app.getPreferences("CarreteraBoja");
 int record = prefs.getInteger("record", 0);
@@ -405,7 +415,7 @@ joc.fontPunts.draw(joc.batch, layout,
 
 ---
 
-## MODIFICACIO 6 — Mostrar les vides amb icones (imatges) en comptes de text
+## PROVA 6 — Mostrar les vides amb icones (imatges) en comptes de text
 
 **Probabilitat mitja.** Es un exercici classic de HUD grafic.
 
@@ -439,88 +449,18 @@ public static final AssetDescriptor<Texture> cor =
 
 ---
 
-## MODIFICACIO 7 — Comptador de cotxes esquivats
+## PROVA 7 — Comptador de cotxes esquivats
 
 **Probabilitat mitja.** Senzill pero demostra comprensio del flux del joc.
 
-### Fitxer: `PantallaJoc.java`
-
-```java
-// Nova variable
-private int cotxesEsquivats = 0;
-```
+### Que cal fer
+Comptar quants cotxes rivals surten per la part inferior sense xocar i mostrar-ho al HUD.
 
 ### Fitxer: `GestorCotxesRivals.java`
 
-Retornar el nombre de rivals eliminats (que surten per sota sense xocar):
+Afegir un comptador:
 
 ```java
-// Afegir un comptador
-private int esquivats = 0;
-
-public int getEsquivats() { return esquivats; }
-
-// A CotxeRival.act() no podem incrementar directament, pero podem fer-ho
-// des del GestorCotxesRivals.act()
-```
-
-Alternativa mes senzilla: comptar a `CotxeRival.act()` quan un cotxe surt per sota:
-
-### Fitxer: `CotxeRival.java`
-
-Canviar act() per usar un callback:
-
-```java
-@Override
-public void act(float delta) {
-    super.act(delta);
-    if (getY() + getHeight() < 0) {
-        // El cotxe ha sortit per sota -> ha estat esquivat
-        remove();
-    }
-}
-```
-
-### Fitxer: `GestorCotxesRivals.java`
-
-Afegir un metode per comptar quants han estat eliminats (no per col·lisio):
-
-```java
-private int totalEsquivats = 0;
-
-@Override
-public void act(float delta) {
-    int abansAct = getChildren().size;
-    super.act(delta); // Aqui es crida act() de cada fill, que pot fer remove()
-    // La diferencia son els que s'han auto-eliminat (esquivats)
-    // NOTA: nomes funciona si no hi ha spawns al mateix frame
-    // Alternativa mes segura: comptar dins comprovarCollisio
-}
-
-// Alternativa senzilla: afegir variable i incrementar-la
-// quan un rival surt per sota
-```
-
-La forma mes facil: a `PantallaJoc.render()`, ABANS de cridar `stage.act(delta)`, comptar els actors. DESPRES, la diferencia (menys els que han xocat) son els esquivats:
-
-```java
-// Abans de stage.act():
-int rivalsAbans = gestorRivals.getChildren().size;
-
-stage.act(delta);
-stage.draw();
-
-// Despres de comprovar col·lisions:
-int rivalsActuals = gestorRivals.getChildren().size;
-int eliminatsTotal = rivalsAbans - rivalsActuals;
-// eliminatsTotal inclou xocs + esquivats, pero els xocs ja els hem comptat
-// Mes senzill: simplement comptar els que surten per baix
-```
-
-**Forma mes neta:** Afegir un comptador al GestorCotxesRivals:
-
-```java
-// A GestorCotxesRivals
 private int cotxesEsquivats = 0;
 
 public int getCotxesEsquivats() { return cotxesEsquivats; }
@@ -528,13 +468,16 @@ public int getCotxesEsquivats() { return cotxesEsquivats; }
 public void incrementarEsquivats() { cotxesEsquivats++; }
 ```
 
-A CotxeRival.act():
+### Fitxer: `CotxeRival.java`
+
+Modificar `act()` per notificar el gestor quan el cotxe surt per sota:
+
 ```java
 @Override
 public void act(float delta) {
     super.act(delta);
     if (getY() + getHeight() < 0) {
-        // Notifiquem al gestor que aquest cotxe ha estat esquivat
+        // El cotxe ha sortit per sota -> ha estat esquivat
         if (getParent() instanceof GestorCotxesRivals) {
             ((GestorCotxesRivals) getParent()).incrementarEsquivats();
         }
@@ -543,8 +486,13 @@ public void act(float delta) {
 }
 ```
 
-A PantallaJoc, mostrar-ho al HUD:
+### Fitxer: `PantallaJoc.java`
+
+Mostrar al HUD:
+
 ```java
+// A la seccio del HUD (dins el bloc stage.getBatch().begin/end):
+joc.fontPunts.setColor(Color.CYAN);
 joc.fontPunts.draw(stage.getBatch(),
     "Esquivats: " + gestorRivals.getCotxesEsquivats(),
     12f, Main.ALCADA - 50f);
@@ -552,12 +500,12 @@ joc.fontPunts.draw(stage.getBatch(),
 
 ---
 
-## MODIFICACIO 8 — Afegir un segon tipus de rival (mes gran o mes rapid)
+## PROVA 8 — Afegir un segon tipus de rival (mes gran o mes rapid)
 
 **Probabilitat mitja.** Demostra polimorfisme i diversitat de gameplay.
 
 ### Que cal fer
-Crear un `CotxeRivalRapid.java` que hereti de `CotxeRival` o de `Image` directament, amb una mida o velocitat diferent.
+Crear un `CotxeRivalRapid.java` que hereti de `Image` directament, amb una mida o velocitat diferent.
 
 ### Fitxer NOU: `CotxeRivalRapid.java`
 
@@ -610,7 +558,7 @@ private void generarCotxeRival() {
     if (MathUtils.random(0, 3) == 0) {
         // 25% de probabilitat: cotxe rapid
         CotxeRivalRapid rapid = new CotxeRivalRapid(textura);
-        rapid.addAction(Actions.moveTo(rapid.getX(), -rapid.getHeight() - 10f, 2.0f)); // Mes rapid
+        rapid.addAction(Actions.moveTo(rapid.getX(), -rapid.getHeight() - 10f, 2.0f));
         addActor(rapid);
     } else {
         // 75% de probabilitat: cotxe normal
@@ -646,9 +594,11 @@ public boolean comprovarCollisio(CotxeJugador cotxeJugador) {
 }
 ```
 
+Caldra importar `MathUtils` al GestorCotxesRivals.
+
 ---
 
-## MODIFICACIO 9 — Afegir un so al guanyar una vida extra
+## PROVA 9 — Afegir un so al guanyar una vida extra
 
 **Probabilitat alta (facil).** Exercici simple de Sound.
 
@@ -678,9 +628,11 @@ tempsAvisVida = DURACIO_AVIS_VIDA;
 soVidaExtra.play(); // <-- AFEGIR AQUI
 ```
 
+**IMPORTANT:** Necessitaras un fitxer `vida_extra.wav` a la carpeta `assets/`.
+
 ---
 
-## MODIFICACIO 10 — Pantalla de seleccio de cotxe
+## PROVA 10 — Pantalla de seleccio de cotxe
 
 **Probabilitat baixa-mitja.** Mes llarg, pero demostra comprensio de Screen i Actor.
 
@@ -689,13 +641,22 @@ Crear una `PantallaSeleccio.java` que mostri 2-3 cotxes i l'usuari toqui per esc
 
 ### Fitxer NOU: `PantallaSeleccio.java`
 
-Estructura basica:
-
 ```java
+package com.exempleclasse;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.ScreenUtils;
+
 public class PantallaSeleccio implements Screen {
     private final Main joc;
     private Texture[] textures;
     private String[] noms = {"ferrari.png", "cotxeRival.png"}; // o altres
+    private GlyphLayout layout = new GlyphLayout();
 
     public PantallaSeleccio(Main joc) {
         this.joc = joc;
@@ -713,7 +674,6 @@ public class PantallaSeleccio implements Screen {
         joc.batch.begin();
 
         // Titol
-        GlyphLayout layout = new GlyphLayout();
         joc.fontTitol.setColor(Color.YELLOW);
         layout.setText(joc.fontTitol, "ESCULL COTXE");
         joc.fontTitol.draw(joc.batch, layout,
@@ -748,7 +708,19 @@ public class PantallaSeleccio implements Screen {
             }
         }
     }
-    // ... resta de metodes de Screen
+
+    @Override public void show() {}
+    @Override public void resize(int w, int h) { joc.viewport.update(w, h, true); }
+    @Override public void pause() {}
+    @Override public void resume() {}
+    @Override public void hide() {}
+
+    @Override
+    public void dispose() {
+        for (Texture t : textures) {
+            if (t != null) t.dispose();
+        }
+    }
 }
 ```
 
@@ -760,7 +732,7 @@ private String texturaJugadorNom;
 public PantallaJoc(Main joc, String texturaJugadorNom) {
     this.joc = joc;
     this.texturaJugadorNom = texturaJugadorNom;
-    // ... resta igual
+    // ... resta del constructor igual
 }
 ```
 
@@ -770,9 +742,11 @@ Texture texturaJugador = new Texture(Gdx.files.internal(texturaJugadorNom));
 cotxeJugador = new CotxeJugador(texturaJugador);
 ```
 
+I a `PantallaMenu`, canviar la linia `joc.setScreen(new PantallaJoc(joc))` per `joc.setScreen(new PantallaSeleccio(joc))`.
+
 ---
 
-## MODIFICACIO 11 — Canviar el color del flash d'impacte o afegir vibracio
+## PROVA 11 — Canviar el color del flash d'impacte o afegir vibracio
 
 **Probabilitat alta (molt facil).** Canvi de 1-2 linies.
 
@@ -794,9 +768,14 @@ stage.getBatch().setColor(1f, 1f, 0f, alpha); // Groc
 Gdx.input.vibrate(200); // Vibrar 200 milisegons
 ```
 
+**Nota:** La vibracio requereix el permis `VIBRATE` a `AndroidManifest.xml`:
+```xml
+<uses-permission android:name="android.permission.VIBRATE" />
+```
+
 ---
 
-## MODIFICACIO 12 — Canviar nombre de vides inicials o la regla del bonus
+## PROVA 12 — Canviar nombre de vides inicials o la regla del bonus
 
 **Probabilitat molt alta (la mes facil).** Canvi d'una constant.
 
@@ -819,9 +798,19 @@ if (nousMultiples > vitesPerPunts) {
 }
 ```
 
+Per canviar el bonus a cada 200 punts:
+```java
+int nousMultiples = punts / 200; // Ara es cada 200 punts
+```
+
+Per perdre 2 vides:
+```java
+vides -= 2; // En comptes de vides--
+```
+
 ---
 
-## MODIFICACIO 13 — Afegir un temporitzador visible (countdown)
+## PROVA 13 — Afegir un temporitzador visible (countdown)
 
 **Probabilitat mitja.** El joc dura X segons i si sobrevius, guanyes.
 
@@ -847,7 +836,7 @@ if (tempsRestant <= 0) {
 Per mostrar-ho al HUD:
 
 ```java
-// Al centre de la part superior
+// Al centre de la part superior (dins el bloc stage.getBatch().begin/end)
 joc.fontPunts.setColor(Color.YELLOW);
 String tempsText = "TEMPS: " + (int) tempsRestant;
 layout.setText(joc.fontPunts, tempsText);
@@ -855,22 +844,390 @@ joc.fontPunts.draw(stage.getBatch(), tempsText,
     (Main.AMPLADA - layout.width) / 2f, Main.ALCADA - 10f);
 ```
 
+**Nota:** Necessites la classe `PantallaVictoria` (veure PROVA 2).
+
+---
+
+## PROVA 14 — Obstacles estatics a la carretera (cons o barreres)
+
+**Probabilitat mitja.** Afegir obstacles fixes que NO es mouen, sino que baixen amb la carretera.
+
+### Que cal fer
+1. Crear un actor `Obstacle.java` que es mou amb el scroll de la carretera
+2. Crear un gestor `GestorObstacles.java` similar a `GestorCotxesRivals.java`
+3. A `PantallaJoc`, comprovar col·lisions amb el jugador
+
+### Fitxer NOU: `Obstacle.java`
+
+```java
+package com.exempleclasse;
+
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+
+/**
+ * Actor que representa un obstacle estatic a la carretera (con, barrera, forat...).
+ * Es mes petit que un cotxe rival i no te accio de moveTo propia:
+ * es mou cap avall a la velocitat de la carretera.
+ */
+public class Obstacle extends Image {
+
+    public static final float AMPLADA_OBS = 45f;
+    public static final float ALCADA_OBS  = 45f;
+
+    // Posicions X possibles (centrades als carrils)
+    private static final float[] POSICIONS = { 55f, 160f, 265f, 370f };
+
+    public Obstacle(Texture textura) {
+        super(textura);
+        setSize(AMPLADA_OBS, ALCADA_OBS);
+        // Apareix en una posicio X aleatoria dins un carril
+        float x = POSICIONS[MathUtils.random(0, POSICIONS.length - 1)];
+        setPosition(x, Main.ALCADA + ALCADA_OBS);
+    }
+
+    @Override
+    public void act(float delta) {
+        super.act(delta);
+        // S'auto-elimina si surt per sota
+        if (getY() + getHeight() < 0) {
+            remove();
+        }
+    }
+
+    /**
+     * Comprova col·lisio amb el jugador (AABB, sense marges)
+     */
+    public boolean colisionaAmbJugador(CotxeJugador jugador) {
+        Rectangle rect = new Rectangle(getX(), getY(), getWidth(), getHeight());
+        return rect.overlaps(jugador.getRectangle());
+    }
+}
+```
+
+### Fitxer NOU: `GestorObstacles.java`
+
+```java
+package com.exempleclasse;
+
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.utils.TimeUtils;
+import java.util.Iterator;
+
+/**
+ * Gestor d'obstacles estatics. Genera obstacles periodicament
+ * que baixen per la carretera a la mateixa velocitat que el fons.
+ */
+public class GestorObstacles extends Group {
+
+    // Apareix un obstacle cada 4 segons
+    private static final long INTERVAL_SPAWN = 4_000_000_000L;
+    // Temps que tarda en baixar (similar a la carretera per coherencia visual)
+    private static final float DURADA_BAIXADA = 4.5f;
+
+    private final Texture textura;
+    private long darrereSpawnTime;
+
+    public GestorObstacles(Texture textura) {
+        this.textura = textura;
+        darrereSpawnTime = TimeUtils.nanoTime();
+    }
+
+    @Override
+    public void act(float delta) {
+        super.act(delta);
+        if (TimeUtils.nanoTime() - darrereSpawnTime > INTERVAL_SPAWN) {
+            darrereSpawnTime = TimeUtils.nanoTime();
+            generarObstacle();
+        }
+    }
+
+    private void generarObstacle() {
+        Obstacle obs = new Obstacle(textura);
+        // Movem l'obstacle cap avall amb una accio
+        obs.addAction(Actions.moveTo(obs.getX(), -obs.getHeight() - 10f, DURADA_BAIXADA));
+        addActor(obs);
+    }
+
+    /**
+     * Comprova si algun obstacle ha xocat amb el jugador.
+     * Retorna true si hi ha col·lisio (i elimina l'obstacle).
+     */
+    public boolean comprovarCollisio(CotxeJugador cotxeJugador) {
+        boolean hiHaCollisio = false;
+        Iterator<Actor> it = getChildren().iterator();
+        while (it.hasNext()) {
+            Obstacle obs = (Obstacle) it.next();
+            if (obs.colisionaAmbJugador(cotxeJugador)) {
+                obs.remove();
+                hiHaCollisio = true;
+            }
+        }
+        return hiHaCollisio;
+    }
+}
+```
+
+### Fitxer: `AssetDescriptors.java`
+
+```java
+public static final AssetDescriptor<Texture> obstacle =
+    new AssetDescriptor<>("obstacle.png", Texture.class);
+```
+
+### Fitxer: `PantallaJoc.java`
+
+Afegir la variable i integrar-la:
+
+```java
+// Nova variable
+GestorObstacles gestorObstacles;
+
+// A carregarAssets():
+assetManager.load(AssetDescriptors.obstacle);
+
+// A show(), despres de crear gestorRivals:
+gestorObstacles = new GestorObstacles(assetManager.get(AssetDescriptors.obstacle));
+stage.addActor(gestorObstacles);
+
+// A render(), DESPRES de comprovar col·lisions amb rivals:
+if (tempsInvulnerable <= 0 && gestorObstacles.comprovarCollisio(cotxeJugador)) {
+    soImpacte.play();
+    vides--;
+    tempsInvulnerable = DURACIO_INVULNERABILITAT;
+    tempsFlash        = DURACIO_FLASH;
+
+    if (vides <= 0) {
+        joc.setScreen(new PantallaGameOver(joc, punts));
+        return;
+    }
+}
+```
+
+**IMPORTANT:** Necessitaras un fitxer `obstacle.png` a la carpeta `assets/` (pot ser una imatge d'un con, una barrera o un forat).
+
+**Alternativa sense nou asset:** Pots reutilitzar la textura d'1 pixel blanc (`texturaFlash`) pintant-la de color taronja:
+
+```java
+// En comptes de carregar un asset, crear l'obstacle amb texturaFlash tenyida
+gestorObstacles = new GestorObstacles(texturaFlash);
+// I a Obstacle, afegir setColor(Color.ORANGE) al constructor
+```
+
+---
+
+## PROVA 15 — Power-up d'escut (invulnerabilitat temporal recollible)
+
+**Probabilitat mitja.** Combina col·leccionables (PROVA 3) amb el sistema d'invulnerabilitat existent.
+
+### Que cal fer
+1. Crear un actor `PowerUpEscut.java` similar a `ItemBonus.java`
+2. Crear un gestor `GestorPowerUps.java`
+3. Quan el jugador el recull, activar un periode d'invulnerabilitat (5 segons)
+4. Mostrar un indicador visual al HUD quan l'escut esta actiu
+
+### Fitxer NOU: `PowerUpEscut.java`
+
+```java
+package com.exempleclasse;
+
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+
+/**
+ * Power-up que atorga un periode d'invulnerabilitat al jugador.
+ * Apareix a la carretera i el jugador l'ha de recollir tocant-lo.
+ */
+public class PowerUpEscut extends Image {
+
+    public static final float MIDA = 45f;
+
+    public PowerUpEscut(Texture textura) {
+        super(textura);
+        setSize(MIDA, MIDA);
+        // Posicio X aleatoria dins la carretera
+        float x = MathUtils.random(40f, Main.AMPLADA - 40f - MIDA);
+        setPosition(x, Main.ALCADA + MIDA);
+        // Color blau brillant per distingir-lo
+        setColor(0.3f, 0.5f, 1f, 1f);
+    }
+
+    @Override
+    public void act(float delta) {
+        super.act(delta);
+        if (getY() + getHeight() < 0) remove();
+    }
+
+    public boolean colisionaAmbJugador(CotxeJugador jugador) {
+        Rectangle rect = new Rectangle(getX(), getY(), getWidth(), getHeight());
+        return rect.overlaps(jugador.getRectangle());
+    }
+}
+```
+
+### Fitxer NOU: `GestorPowerUps.java`
+
+```java
+package com.exempleclasse;
+
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.utils.TimeUtils;
+import java.util.Iterator;
+
+/**
+ * Gestor de power-ups d'escut. Genera un power-up cada 10 segons.
+ */
+public class GestorPowerUps extends Group {
+
+    // Un power-up cada 10 segons
+    private static final long INTERVAL_SPAWN = 10_000_000_000L;
+    private final Texture textura;
+    private long darrereSpawnTime;
+
+    public GestorPowerUps(Texture textura) {
+        this.textura = textura;
+        darrereSpawnTime = TimeUtils.nanoTime();
+    }
+
+    @Override
+    public void act(float delta) {
+        super.act(delta);
+        if (TimeUtils.nanoTime() - darrereSpawnTime > INTERVAL_SPAWN) {
+            darrereSpawnTime = TimeUtils.nanoTime();
+            PowerUpEscut pu = new PowerUpEscut(textura);
+            pu.addAction(Actions.moveTo(pu.getX(), -pu.getHeight() - 10f, 5f));
+            addActor(pu);
+        }
+    }
+
+    /**
+     * Comprova si el jugador ha recollit algun power-up.
+     * @return true si s'ha recollit almenys un power-up
+     */
+    public boolean recollirPowerUp(CotxeJugador cotxe) {
+        boolean recollit = false;
+        Iterator<Actor> it = getChildren().iterator();
+        while (it.hasNext()) {
+            PowerUpEscut pu = (PowerUpEscut) it.next();
+            if (pu.colisionaAmbJugador(cotxe)) {
+                pu.remove();
+                recollit = true;
+            }
+        }
+        return recollit;
+    }
+}
+```
+
+### Fitxer: `AssetDescriptors.java`
+
+```java
+// Pots reutilitzar una textura existent o crear-ne una de nova
+public static final AssetDescriptor<Texture> escut =
+    new AssetDescriptor<>("escut.png", Texture.class);
+```
+
+### Fitxer: `PantallaJoc.java`
+
+```java
+// Noves variables
+GestorPowerUps gestorPowerUps;
+private float tempsEscut = 0f;
+private static final float DURACIO_ESCUT = 5f; // 5 segons d'escut
+
+// A carregarAssets():
+assetManager.load(AssetDescriptors.escut);
+
+// A show(), despres de crear gestorRivals:
+gestorPowerUps = new GestorPowerUps(assetManager.get(AssetDescriptors.escut));
+stage.addActor(gestorPowerUps);
+```
+
+A `render()`, DESPRES de `stage.act(delta)` i `stage.draw()`:
+
+```java
+// Comprovar si el jugador recull un power-up
+if (gestorPowerUps.recollirPowerUp(cotxeJugador)) {
+    tempsEscut = DURACIO_ESCUT; // Activar escut
+}
+
+// Actualitzar temporitzador de l'escut
+if (tempsEscut > 0) {
+    tempsEscut -= delta;
+}
+```
+
+Modificar la comprovacio de col·lisions per tenir en compte l'escut:
+
+```java
+// Canviar la condicio existent de:
+if (tempsInvulnerable <= 0 && gestorRivals.comprovarCollisio(cotxeJugador)) {
+// A:
+if (tempsInvulnerable <= 0 && tempsEscut <= 0
+        && gestorRivals.comprovarCollisio(cotxeJugador)) {
+```
+
+Mostrar al HUD quan l'escut esta actiu:
+
+```java
+// Dins el bloc stage.getBatch().begin/end del HUD:
+if (tempsEscut > 0) {
+    joc.fontPunts.setColor(Color.CYAN);
+    String textEscut = "ESCUT: " + (int) tempsEscut + "s";
+    layout.setText(joc.fontPunts, textEscut);
+    joc.fontPunts.draw(stage.getBatch(), textEscut,
+        (Main.AMPLADA - layout.width) / 2f, Main.ALCADA - 50f);
+
+    // Opcional: efecte visual al cotxe (contorn blau)
+    cotxeJugador.setColor(0.5f, 0.8f, 1f, 1f);
+} else {
+    cotxeJugador.setColor(Color.WHITE); // Color normal
+}
+```
+
+**IMPORTANT:** Necessitaras un fitxer `escut.png` a `assets/`. Alternativament, pots reutilitzar `texturaFlash` (el pixel blanc) amb `setColor(Color.CYAN)` al constructor del `PowerUpEscut`.
+
+**Alternativa sense nou asset (reutilitzant texturaFlash):**
+
+```java
+// A show(), en comptes de carregar un asset nou:
+gestorPowerUps = new GestorPowerUps(texturaFlash);
+// El color ja es defineix al constructor de PowerUpEscut (blau)
+```
+
 ---
 
 ## RESUM RAPID — Que estudiar per prioritat
 
-| Prioritat | Tema | Fitxers que tocaras |
-|-----------|------|---------------------|
-| ALTA | Canviar constants (vides, punts, velocitats) | PantallaJoc.java |
-| ALTA | Afegir un so nou | AssetDescriptors + PantallaJoc |
-| ALTA | Dificultat progressiva | PantallaJoc + GestorCotxesRivals |
-| ALTA | Meta / victoria | PantallaJoc + NOU PantallaVictoria |
-| MITJA | Guardar record (Preferences) | PantallaJoc + PantallaGameOver |
-| MITJA | Pantalla de pausa | PantallaJoc |
-| MITJA | Objectes col·leccionables | NOU ItemBonus + GestorItems |
-| MITJA | Comptador d'esquivats | CotxeRival + GestorCotxesRivals |
-| BAIXA | Seleccio de cotxe | NOU PantallaSeleccio |
-| BAIXA | Segon tipus de rival | NOU CotxeRivalRapid |
+| Prioritat | Prova | Tema | Fitxers que tocaras |
+|-----------|-------|------|---------------------|
+| **ALTA** | 12 | Canviar constants (vides, punts, velocitats) | PantallaJoc |
+| **ALTA** | 11 | Canviar flash / afegir vibracio | PantallaJoc |
+| **ALTA** | 9 | Afegir un so nou | AssetDescriptors + PantallaJoc |
+| **ALTA** | 1 | Dificultat progressiva | PantallaJoc + GestorCotxesRivals |
+| **ALTA** | 2 | Meta / victoria | PantallaJoc + NOU PantallaVictoria |
+| **MITJA-ALTA** | 5 | Guardar record (Preferences) | PantallaJoc + PantallaGameOver |
+| **MITJA** | 4 | Pantalla de pausa | PantallaJoc |
+| **MITJA** | 13 | Temporitzador / countdown | PantallaJoc |
+| **MITJA** | 3 | Objectes col·leccionables | NOU ItemBonus + GestorItems |
+| **MITJA** | 6 | Vides amb icones | PantallaJoc |
+| **MITJA** | 7 | Comptador d'esquivats | CotxeRival + GestorCotxesRivals |
+| **MITJA** | 14 | Obstacles estatics | NOU Obstacle + GestorObstacles |
+| **MITJA** | 15 | Power-up d'escut | NOU PowerUpEscut + GestorPowerUps |
+| **BAIXA** | 8 | Segon tipus de rival | NOU CotxeRivalRapid |
+| **BAIXA** | 10 | Seleccio de cotxe | NOU PantallaSeleccio |
+
+---
 
 ## Conceptes clau que has de dominar
 
@@ -884,3 +1241,99 @@ joc.fontPunts.draw(stage.getBatch(), tempsText,
 8. **Preferences:** `Gdx.app.getPreferences("nom")` per guardar/llegir dades
 9. **Sound vs Music:** Sound per efectes curts (`.play()`), Music per fons (`.setLooping`, `.setVolume`)
 10. **GlyphLayout:** Per calcular l'amplada d'un text i centrar-lo: `layout.setText(font, text)` → `layout.width`
+
+---
+
+## Patro comu per afegir una entitat nova al joc
+
+Moltes proves demanen crear un nou tipus d'objecte (bonus, obstacle, power-up). El patro es sempre el mateix:
+
+### Pas 1: Crear la classe Actor
+
+```java
+public class NouActor extends Image {
+    public NouActor(Texture textura) {
+        super(textura);
+        setSize(MIDA_X, MIDA_Y);
+        setPosition(posicioAleatoria, Main.ALCADA + MIDA_Y);
+    }
+
+    @Override
+    public void act(float delta) {
+        super.act(delta);
+        if (getY() + getHeight() < 0) remove();
+    }
+
+    public boolean colisionaAmbJugador(CotxeJugador jugador) {
+        Rectangle rect = new Rectangle(getX(), getY(), getWidth(), getHeight());
+        return rect.overlaps(jugador.getRectangle());
+    }
+}
+```
+
+### Pas 2: Crear el Gestor (Group)
+
+```java
+public class GestorNouActor extends Group {
+    private static final long INTERVAL = 5_000_000_000L;
+    private final Texture textura;
+    private long darrereSpawnTime;
+
+    public GestorNouActor(Texture textura) {
+        this.textura = textura;
+        darrereSpawnTime = TimeUtils.nanoTime();
+    }
+
+    @Override
+    public void act(float delta) {
+        super.act(delta);
+        if (TimeUtils.nanoTime() - darrereSpawnTime > INTERVAL) {
+            darrereSpawnTime = TimeUtils.nanoTime();
+            NouActor actor = new NouActor(textura);
+            actor.addAction(Actions.moveTo(actor.getX(), -actor.getHeight(), DURADA));
+            addActor(actor);
+        }
+    }
+
+    public boolean comprovar(CotxeJugador cotxe) {
+        boolean trobat = false;
+        Iterator<Actor> it = getChildren().iterator();
+        while (it.hasNext()) {
+            NouActor a = (NouActor) it.next();
+            if (a.colisionaAmbJugador(cotxe)) {
+                a.remove();
+                trobat = true;
+            }
+        }
+        return trobat;
+    }
+}
+```
+
+### Pas 3: Integrar a PantallaJoc
+
+```java
+// 1. Declarar variable
+GestorNouActor gestorNou;
+
+// 2. Carregar asset (carregarAssets)
+assetManager.load(AssetDescriptors.nouAsset);
+
+// 3. Crear i afegir a l'Stage (show)
+gestorNou = new GestorNouActor(assetManager.get(AssetDescriptors.nouAsset));
+stage.addActor(gestorNou);
+
+// 4. Comprovar col·lisions (render)
+if (gestorNou.comprovar(cotxeJugador)) {
+    // Fer alguna cosa: sumar punts, restar vides, activar power-up...
+}
+```
+
+### Pas 4: Declarar l'asset (AssetDescriptors)
+
+```java
+public static final AssetDescriptor<Texture> nouAsset =
+    new AssetDescriptor<>("nou_asset.png", Texture.class);
+```
+
+**Memoritza aquest patro** — es la base de les proves 3, 8, 14 i 15.
